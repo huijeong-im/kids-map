@@ -19,11 +19,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `https://apis.data.go.kr/1741000/public_restroom_info/info?serviceKey=${encodeURIComponent(SERVICE_KEY)}&pageNo=1&numOfRows=1000&type=json&sido=${encodeURIComponent(sido)}`
+    const url = `https://apis.data.go.kr/1741000/public_restroom_info/info?serviceKey=${SERVICE_KEY}&pageNo=1&numOfRows=1000&type=json&sido=${encodeURIComponent(sido)}`
     const response = await fetch(url)
 
     if (!response.ok) {
-      throw new Error(`API 응답 오류: ${response.status}`)
+      const body = await response.text()
+      throw new Error(`API ${response.status}: ${body.slice(0, 300)}`)
     }
 
     const data = await response.json()
