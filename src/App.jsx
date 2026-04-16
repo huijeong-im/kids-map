@@ -42,6 +42,7 @@ export default function App() {
   const mapInstanceRef = useRef(null)
   const overlaysRef = useRef([])
   const categoryRef = useRef('수유실')
+  const searchIdRef = useRef(0)
 
   const [category, setCategory] = useState('수유실')
   const [places, setPlaces] = useState([])
@@ -160,11 +161,14 @@ export default function App() {
     setSelectedPlace(null)
     clearOverlays()
 
+    const sid = ++searchIdRef.current
+
     if (cat === '기저귀교환대') {
       const center = map.getCenter()
       fetch(`/api/restrooms?lat=${center.getLat()}&lng=${center.getLng()}`)
         .then(r => r.json())
         .then(data => {
+          if (sid !== searchIdRef.current) return
           if (data.error) throw new Error(data.error)
           const myLoc = myLocationRef.current
           const items = (data.restrooms || []).map(item => ({
@@ -182,7 +186,11 @@ export default function App() {
           addOverlays(items)
           setLoading(false)
         })
-        .catch(e => { setLocError('기저귀교환대 오류: ' + e.message); setLoading(false) })
+        .catch(e => {
+          if (sid !== searchIdRef.current) return
+          setLocError('기저귀교환대 오류: ' + e.message)
+          setLoading(false)
+        })
       return
     }
 
@@ -194,6 +202,7 @@ export default function App() {
 
     keywords.forEach((kw) => {
       ps.keywordSearch(kw, (data, status) => {
+        if (sid !== searchIdRef.current) return
         if (status === kakao.maps.services.Status.OK) {
           allResults.push(...data.map(d => ({ ...d, _kw: kw })))
         }
