@@ -20,7 +20,7 @@ export default function App() {
 
   const [category, setCategory] = useState('all')
   const [places, setPlaces] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [locError, setLocError] = useState(null)
   const [selectedPlace, setSelectedPlace] = useState(null)
   const [myLocation, setMyLocation] = useState(null)
@@ -28,18 +28,40 @@ export default function App() {
   // 지도 초기화
   useEffect(() => {
     const init = () => {
-      const container = mapRef.current
-      const options = {
-        center: new kakao.maps.LatLng(37.5665, 126.9780),
-        level: 5,
+      try {
+        const container = mapRef.current
+        const options = {
+          center: new kakao.maps.LatLng(37.5665, 126.9780),
+          level: 5,
+        }
+        mapInstanceRef.current = new kakao.maps.Map(container, options)
+        getCurrentLocation()
+      } catch (e) {
+        setLocError('지도 초기화 오류: ' + e.message)
+        setLoading(false)
       }
-      mapInstanceRef.current = new kakao.maps.Map(container, options)
-      getCurrentLocation()
     }
 
-    if (window.kakao) {
-      window.kakao.maps.load(init)
+    if (!window.kakao) {
+      setLocError('카카오맵 SDK가 로드되지 않았어요. 페이지를 새로고침 해주세요.')
+      setLoading(false)
+      return
     }
+
+    // SDK 로드 타임아웃 (5초)
+    const timeout = setTimeout(() => {
+      if (!mapInstanceRef.current) {
+        setLocError('카카오맵 인증 실패. API 키 또는 도메인 설정을 확인해주세요.')
+        setLoading(false)
+      }
+    }, 5000)
+
+    window.kakao.maps.load(() => {
+      clearTimeout(timeout)
+      init()
+    })
+
+    return () => clearTimeout(timeout)
   }, [])
 
   // 카테고리 변경 시 재검색
