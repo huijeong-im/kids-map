@@ -5,12 +5,16 @@ const CATEGORIES = [
   { key: '키즈카페', label: '키즈카페', emoji: '🎠' },
   { key: '놀이터', label: '놀이터', emoji: '🛝' },
   { key: '공원', label: '공원', emoji: '🌳' },
+  { key: '수유실', label: '수유실', emoji: '🍼' },
+  { key: '기저귀교환대', label: '기저귀교환대', emoji: '🚼' },
 ]
 
 const MARKER_COLORS = {
   '키즈카페': '#FF6B9D',
   '놀이터': '#5C7CFA',
   '공원': '#40C057',
+  '수유실': '#FF922B',
+  '기저귀교환대': '#9775FA',
 }
 
 export default function App() {
@@ -112,7 +116,7 @@ export default function App() {
     clearOverlays()
 
     const ps = new kakao.maps.services.Places()
-    const keywords = cat === 'all' ? ['키즈카페', '놀이터', '공원'] : [cat]
+    const keywords = cat === 'all' ? ['키즈카페', '놀이터', '공원', '수유실', '기저귀교환대'] : [cat]
     const allResults = []
     let doneCount = 0
 
@@ -158,7 +162,7 @@ export default function App() {
     placeList.forEach((place) => {
       const pos = new kakao.maps.LatLng(place.y, place.x)
       const color = MARKER_COLORS[place._kw] || '#5C7CFA'
-      const emoji = place._kw === '키즈카페' ? '🎠' : place._kw === '공원' ? '🌳' : '🛝'
+      const emoji = place._kw === '키즈카페' ? '🎠' : place._kw === '공원' ? '🌳' : place._kw === '수유실' ? '🍼' : place._kw === '기저귀교환대' ? '🚼' : '🛝'
       const name = place.place_name.length > 9 ? place.place_name.slice(0, 9) + '…' : place.place_name
 
       const div = document.createElement('div')
@@ -274,7 +278,7 @@ export default function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '16px', fontWeight: '800', color: '#1A1A2E', marginBottom: '5px' }}>
-                  {selectedPlace._kw === '키즈카페' ? '🎠' : selectedPlace._kw === '공원' ? '🌳' : '🛝'} {selectedPlace.place_name}
+                  {selectedPlace._kw === '키즈카페' ? '🎠' : selectedPlace._kw === '공원' ? '🌳' : selectedPlace._kw === '수유실' ? '🍼' : selectedPlace._kw === '기저귀교환대' ? '🚼' : '🛝'} {selectedPlace.place_name}
                 </div>
                 <div style={{ fontSize: '12px', color: '#888', marginBottom: '3px' }}>
                   📍 {selectedPlace.road_address_name || selectedPlace.address_name}
@@ -310,7 +314,7 @@ export default function App() {
             <div key={place.id} onClick={() => goToPlace(place)}
               style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: '1px solid #F8F8F8', cursor: 'pointer', active: { background: '#FFF0F5' } }}>
               <div style={{ fontSize: '22px', flexShrink: 0 }}>
-                {place._kw === '키즈카페' ? '🎠' : place._kw === '공원' ? '🌳' : '🛝'}
+                {place._kw === '키즈카페' ? '🎠' : place._kw === '공원' ? '🌳' : place._kw === '수유실' ? '🍼' : place._kw === '기저귀교환대' ? '🚼' : '🛝'}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '13px', fontWeight: '700', color: '#1A1A2E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.place_name}</div>
