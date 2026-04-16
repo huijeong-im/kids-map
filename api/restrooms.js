@@ -51,11 +51,15 @@ export default async function handler(req, res) {
         const itemLat = parseFloat(item.WGS84_LAT || 0)
         const itemLng = parseFloat(item.WGS84_LOT || 0)
         const distance = getDistance(userLat, userLng, itemLat, itemLng)
+        const openTime = item.OPEN_TM || item.OPER_BEGIN_TM || ''
+        const closeTime = item.CLOSE_TM || item.OPER_END_TM || ''
+        const operTime = openTime && closeTime ? `${openTime} ~ ${closeTime}` : (item.OPER_TM || item.OPER_TIME || '')
         return {
           managementCode: item.MNG_NO,
           restroomNm: item.SE_NM || item.MNG_INST_NM || '공중화장실',
           rdnmadr: item.LCTN_ROAD_NM_ADDR || item.LCTN_LOTNO_ADDR || '',
           phoneNumber: item.TELNO || '',
+          operTime: operTime.trim(),
           _distance: Math.round(distance),
           _lat: itemLat,
           _lng: itemLng,

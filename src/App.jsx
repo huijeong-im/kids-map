@@ -56,7 +56,7 @@ export default function App() {
     return s ? JSON.parse(s) : {}
   })
   const [comments, setComments] = useState(() => {
-    const s = localStorage.getItem('place-comments')
+    const s = localStorage.getItem('place-comments-v2')
     return s ? JSON.parse(s) : {}
   })
   const [editingComment, setEditingComment] = useState('')
@@ -75,7 +75,7 @@ export default function App() {
     const prev = Array.isArray(comments[placeId]) ? comments[placeId] : []
     const next = { ...comments, [placeId]: [{ text: editingComment.trim(), updatedAt: new Date().toISOString() }, ...prev] }
     setComments(next)
-    localStorage.setItem('place-comments', JSON.stringify(next))
+    localStorage.setItem('place-comments-v2', JSON.stringify(next))
     setEditingComment('')
     setSavedMsg(true)
     setTimeout(() => setSavedMsg(false), 2000)
@@ -179,6 +179,7 @@ export default function App() {
             x: String(item._lng), y: String(item._lat),
             distance: myLoc ? String(calcDist(myLoc.lat, myLoc.lng, item._lat, item._lng)) : String(item._distance),
             place_url: '', phone: item.phoneNumber || '',
+            operTime: item.operTime || '',
             _kw: '기저귀교환대',
           }))
           items.sort((a, b) => Number(a.distance) - Number(b.distance))
@@ -321,6 +322,9 @@ export default function App() {
                   {getEmoji(selectedPlace._kw)} {selectedPlace.place_name}
                 </div>
                 <div style={{ fontSize: '13px', color: '#888', marginBottom: '4px' }}>📍 {selectedPlace.road_address_name || selectedPlace.address_name}</div>
+                {selectedPlace.operTime && (
+                  <div style={{ fontSize: '13px', color: '#555', marginBottom: '4px' }}>🕐 {selectedPlace.operTime}</div>
+                )}
                 {/* 도보 + 차 시간 */}
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <span style={{ fontSize: '13px', color: '#555', fontWeight: '600' }}>{formatTime(Number(selectedPlace.distance)).walk}</span>
