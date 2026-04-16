@@ -164,8 +164,11 @@ export default function App() {
     const sid = ++searchIdRef.current
 
     if (cat === '기저귀교환대') {
+      const bounds = map.getBounds()
+      const sw = bounds.getSouthWest()
+      const ne = bounds.getNorthEast()
       const center = map.getCenter()
-      fetch(`/api/restrooms?lat=${center.getLat()}&lng=${center.getLng()}`)
+      fetch(`/api/restrooms?swLat=${sw.getLat()}&swLng=${sw.getLng()}&neLat=${ne.getLat()}&neLng=${ne.getLng()}&centerLat=${center.getLat()}&centerLng=${center.getLng()}`)
         .then(r => r.json())
         .then(data => {
           if (sid !== searchIdRef.current) return

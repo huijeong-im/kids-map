@@ -13,13 +13,18 @@ function getDistance(lat1, lng1, lat2, lng2) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
 
-  const { lat, lng, sido = '서울' } = req.query
-  if (!lat || !lng) {
-    return res.status(400).json({ error: 'lat, lng 파라미터가 필요해요' })
+  const { swLat, swLng, neLat, neLng, centerLat, centerLng, sido = '서울' } = req.query
+  if (!swLat || !swLng || !neLat || !neLng) {
+    return res.status(400).json({ error: 'swLat, swLng, neLat, neLng 파라미터가 필요해요' })
   }
 
+  const sw = { lat: parseFloat(swLat), lng: parseFloat(swLng) }
+  const ne = { lat: parseFloat(neLat), lng: parseFloat(neLng) }
+  const cLat = centerLat ? parseFloat(centerLat) : (sw.lat + ne.lat) / 2
+  const cLng = centerLng ? parseFloat(centerLng) : (sw.lng + ne.lng) / 2
+
   try {
-    const url = `https://apis.data.go.kr/1741000/public_restroom_info/info?serviceKey=${SERVICE_KEY}&pageNo=1&numOfRows=1000&type=json&sido=${encodeURIComponent(sido)}`
+    const url = `https://apis.data.go.kr/1741000/public_restroom_info/info?serviceKey=${SERVICE_KEY}&pageNo=1&numOfRows=3000&type=json&sido=${encodeURIComponent(sido)}`
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -28,29 +33,21 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json()
-
-    // 응답 구조 파악
     const items = data?.response?.body?.items?.item || data?.items || []
 
     if (!Array.isArray(items) || items.length === 0) {
-      // 응답 구조 그대로 반환해서 필드명 확인
       return res.status(200).json({ restrooms: [], debugRaw: JSON.stringify(data).slice(0, 1000) })
     }
 
-    // 첫 번째 아이템의 키 목록 반환 (필드명 확인용)
-    const sampleKeys = Object.keys(items[0])
-
-    const userLat = parseFloat(lat)
-    const userLng = parseFloat(lng)
-    const RADIUS = 2000 // 2km
-
-    // 기저귀교환대 있는 곳만 필터링 + 거리 계산
+    // 기저귀교환대 있는 곳만 필터링 + 지도 bounds 안에 있는 것만
     const results = items
       .filter(item => item.DIAP_EXCHCON_EN === 'Y')
       .map(item => {
         const itemLat = parseFloat(item.WGS84_LAT || 0)
         const itemLng = parseFloat(item.WGS84_LOT || 0)
-        const distance = getDistance(userLat, userLng, itemLat, itemLng)
+        if (itemLat === 0 || itemLng === 0) return null
+        if (itemLat < sw.lat || itemLat > ne.lat || itemLng < sw.lng || itemLng > ne.lng) return null
+        const distance = getDistance(cLat, cLng, itemLat, itemLng)
         const openTime = item.OPEN_TM || item.OPER_BEGIN_TM || ''
         const closeTime = item.CLOSE_TM || item.OPER_END_TM || ''
         const operTime = openTime && closeTime ? `${openTime} ~ ${closeTime}` : (item.OPER_TM || item.OPER_TIME || '')
@@ -65,17 +62,10 @@ export default async function handler(req, res) {
           _lng: itemLng,
         }
       })
-      .filter(item => item._distance <= RADIUS && item._lat !== 0)
+      .filter(Boolean)
       .sort((a, b) => a._distance - b._distance)
-      .slice(0, 30)
 
-    res.status(200).json({
-      restrooms: results,
-      total: results.length,
-      sampleKeys, // 필드명 확인용
-      totalItems: items.length, // 전체 건수
-      sample: items[0], // 첫 번째 항목 원본
-    })
+    res.status(200).json({ restrooms: results, total: results.length })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
