@@ -33,8 +33,12 @@ export default async function handler(req, res) {
     const items = data?.response?.body?.items?.item || data?.items || []
 
     if (!Array.isArray(items) || items.length === 0) {
-      return res.status(200).json({ restrooms: [], debug: JSON.stringify(data).slice(0, 500) })
+      // 응답 구조 그대로 반환해서 필드명 확인
+      return res.status(200).json({ restrooms: [], debugRaw: JSON.stringify(data).slice(0, 1000) })
     }
+
+    // 첫 번째 아이템의 키 목록 반환 (필드명 확인용)
+    const sampleKeys = Object.keys(items[0])
 
     const userLat = parseFloat(lat)
     const userLng = parseFloat(lng)
@@ -60,7 +64,13 @@ export default async function handler(req, res) {
       .sort((a, b) => a._distance - b._distance)
       .slice(0, 30)
 
-    res.status(200).json({ restrooms: results, total: results.length })
+    res.status(200).json({
+      restrooms: results,
+      total: results.length,
+      sampleKeys, // 필드명 확인용
+      totalItems: items.length, // 전체 건수
+      sample: items[0], // 첫 번째 항목 원본
+    })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
