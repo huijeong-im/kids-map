@@ -1,6 +1,5 @@
 const SERVICE_KEY = '5cbb5138262218476992f1c4142072e454c4a3507d0f7ff672242e19b2b04298'
 
-// Haversine 공식으로 두 좌표 간 거리 계산 (미터)
 function getDistance(lat1, lng1, lat2, lng2) {
   const R = 6371000
   const dLat = (lat2 - lat1) * Math.PI / 180
@@ -10,26 +9,43 @@ function getDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-// 중심 좌표로 시/도 자동 감지
-function detectSido(lat, lng) {
-  if (lat >= 37.42 && lat <= 37.70 && lng >= 126.76 && lng <= 127.18) return '서울'
-  if (lat >= 37.15 && lat <= 38.30 && lng >= 126.40 && lng <= 127.80) return '경기'
-  if (lat >= 37.20 && lat <= 37.65 && lng >= 126.30 && lng <= 126.80) return '인천'
-  if (lat >= 35.05 && lat <= 35.40 && lng >= 128.85 && lng <= 129.35) return '부산'
-  if (lat >= 35.75 && lat <= 36.00 && lng >= 128.35 && lng <= 128.75) return '대구'
-  if (lat >= 35.10 && lat <= 35.35 && lng >= 128.95 && lng <= 129.15) return '울산'
-  if (lat >= 36.15 && lat <= 36.55 && lng >= 127.25 && lng <= 127.60) return '대전'
-  if (lat >= 35.05 && lat <= 35.30 && lng >= 126.75 && lng <= 127.00) return '광주'
-  if (lat >= 36.45 && lat <= 36.75 && lng >= 127.20 && lng <= 127.60) return '세종'
-  if (lat >= 36.10 && lat <= 37.10 && lng >= 127.60 && lng <= 129.20) return '충북'
-  if (lat >= 36.00 && lat <= 37.00 && lng >= 126.30 && lng <= 127.60) return '충남'
-  if (lat >= 35.20 && lat <= 35.90 && lng >= 126.40 && lng <= 127.50) return '전북'
-  if (lat >= 34.20 && lat <= 35.40 && lng >= 126.10 && lng <= 127.60) return '전남'
-  if (lat >= 35.50 && lat <= 36.90 && lng >= 128.00 && lng <= 129.50) return '경북'
-  if (lat >= 34.70 && lat <= 35.60 && lng >= 127.60 && lng <= 129.30) return '경남'
-  if (lat >= 33.10 && lat <= 33.60 && lng >= 126.10 && lng <= 126.95) return '제주'
-  if (lat >= 37.00 && lat <= 38.60 && lng >= 127.80 && lng <= 129.40) return '강원'
-  return '서울' // 기본값
+// 각 시/도의 대략적인 경계 박스
+const SIDO_BOUNDS = [
+  { name: '서울',  swLat: 37.42, swLng: 126.76, neLat: 37.70, neLng: 127.18 },
+  { name: '경기',  swLat: 36.95, swLng: 126.40, neLat: 38.30, neLng: 127.85 },
+  { name: '인천',  swLat: 37.10, swLng: 126.10, neLat: 37.65, neLng: 126.85 },
+  { name: '강원',  swLat: 37.00, swLng: 127.70, neLat: 38.65, neLng: 129.40 },
+  { name: '충북',  swLat: 36.30, swLng: 127.60, neLat: 37.10, neLng: 128.55 },
+  { name: '충남',  swLat: 35.90, swLng: 126.30, neLat: 37.00, neLng: 127.60 },
+  { name: '세종',  swLat: 36.40, swLng: 127.20, neLat: 36.75, neLng: 127.40 },
+  { name: '대전',  swLat: 36.20, swLng: 127.30, neLat: 36.50, neLng: 127.60 },
+  { name: '전북',  swLat: 35.40, swLng: 126.40, neLat: 35.95, neLng: 127.80 },
+  { name: '광주',  swLat: 35.05, swLng: 126.75, neLat: 35.30, neLng: 127.00 },
+  { name: '전남',  swLat: 34.20, swLng: 126.10, neLat: 35.50, neLng: 127.80 },
+  { name: '경북',  swLat: 35.60, swLng: 128.00, neLat: 37.00, neLng: 129.50 },
+  { name: '대구',  swLat: 35.65, swLng: 128.35, neLat: 36.00, neLng: 128.80 },
+  { name: '경남',  swLat: 34.70, swLng: 127.60, neLat: 35.60, neLng: 129.30 },
+  { name: '울산',  swLat: 35.40, swLng: 129.00, neLat: 35.65, neLng: 129.40 },
+  { name: '부산',  swLat: 34.90, swLng: 128.75, neLat: 35.40, neLng: 129.35 },
+  { name: '제주',  swLat: 33.10, swLng: 126.10, neLat: 33.60, neLng: 126.95 },
+]
+
+// 지도 bounds와 겹치는 모든 시/도 반환
+function getOverlappingSido(sw, ne) {
+  return SIDO_BOUNDS
+    .filter(s =>
+      !(s.neLat < sw.lat || s.swLat > ne.lat || s.neLng < sw.lng || s.swLng > ne.lng)
+    )
+    .map(s => s.name)
+}
+
+async function fetchSido(sido) {
+  const url = `https://apis.data.go.kr/1741000/public_restroom_info/info?serviceKey=${SERVICE_KEY}&pageNo=1&numOfRows=3000&type=json&sido=${encodeURIComponent(sido)}`
+  const res = await fetch(url)
+  if (!res.ok) return []
+  const data = await res.json()
+  const items = data?.response?.body?.items?.item || data?.items || []
+  return Array.isArray(items) ? items : []
 }
 
 export default async function handler(req, res) {
@@ -45,32 +61,26 @@ export default async function handler(req, res) {
   const cLat = centerLat ? parseFloat(centerLat) : (sw.lat + ne.lat) / 2
   const cLng = centerLng ? parseFloat(centerLng) : (sw.lng + ne.lng) / 2
 
-  const sido = detectSido(cLat, cLng)
+  const sidoList = getOverlappingSido(sw, ne)
+  if (sidoList.length === 0) {
+    return res.status(200).json({ restrooms: [], total: 0 })
+  }
 
   try {
-    const url = `https://apis.data.go.kr/1741000/public_restroom_info/info?serviceKey=${SERVICE_KEY}&pageNo=1&numOfRows=3000&type=json&sido=${encodeURIComponent(sido)}`
-    const response = await fetch(url)
+    // 겹치는 모든 시/도 병렬 요청
+    const allItems = (await Promise.all(sidoList.map(fetchSido))).flat()
 
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`API ${response.status}: ${body.slice(0, 300)}`)
-    }
-
-    const data = await response.json()
-    const items = data?.response?.body?.items?.item || data?.items || []
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(200).json({ restrooms: [], sido })
-    }
-
-    // 기저귀교환대 있는 곳만 필터링 + 지도 bounds 안에 있는 것만
-    const results = items
+    const seen = new Set()
+    const results = allItems
       .filter(item => item.DIAP_EXCHCON_EN === 'Y')
       .map(item => {
         const itemLat = parseFloat(item.WGS84_LAT || 0)
         const itemLng = parseFloat(item.WGS84_LOT || 0)
         if (itemLat === 0 || itemLng === 0) return null
         if (itemLat < sw.lat || itemLat > ne.lat || itemLng < sw.lng || itemLng > ne.lng) return null
+        const key = item.MNG_NO || `${itemLat},${itemLng}`
+        if (seen.has(key)) return null
+        seen.add(key)
         const distance = getDistance(cLat, cLng, itemLat, itemLng)
         const openTime = item.OPEN_TM || item.OPER_BEGIN_TM || ''
         const closeTime = item.CLOSE_TM || item.OPER_END_TM || ''
@@ -89,7 +99,7 @@ export default async function handler(req, res) {
       .filter(Boolean)
       .sort((a, b) => a._distance - b._distance)
 
-    res.status(200).json({ restrooms: results, total: results.length, sido })
+    res.status(200).json({ restrooms: results, total: results.length, sido: sidoList })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
