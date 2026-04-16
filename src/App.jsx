@@ -250,23 +250,19 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#F8F9FF' }}>
 
       {/* 헤더 */}
-      <div style={{ background: 'linear-gradient(135deg, #FF6B9D 0%, #FF8FAB 100%)', padding: '16px 20px 12px', flexShrink: 0 }}>
-        <div style={{ fontSize: '20px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>🗺️ 민서맘 놀이터 지도</div>
+      <div style={{ background: 'linear-gradient(135deg, #FF6B9D 0%, #FF8FAB 100%)', padding: '14px 20px 12px', paddingTop: 'max(14px, env(safe-area-inset-top))', flexShrink: 0 }}>
+        <div style={{ fontSize: '22px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>🗺️ 민서야 사랑해</div>
         <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>지도 범위 내 장소 · 거리순 정렬</div>
       </div>
 
       {/* 카테고리 탭 */}
-      <div style={{ display: 'flex', gap: '8px', padding: '10px 16px', background: 'white', borderBottom: '1px solid #EEF0FF', flexShrink: 0, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: '8px', padding: '10px 16px', background: 'white', borderBottom: '1px solid #EEF0FF', flexShrink: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {CATEGORIES.map(c => (
           <button key={c.key} onClick={() => setCategory(c.key)}
-            style={{ padding: '7px 14px', borderRadius: '99px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '700', whiteSpace: 'nowrap', background: category === c.key ? '#FF6B9D' : '#F0F4FF', color: category === c.key ? 'white' : '#555' }}>
+            style={{ padding: '8px 14px', borderRadius: '99px', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '700', whiteSpace: 'nowrap', background: category === c.key ? '#FF6B9D' : '#F0F4FF', color: category === c.key ? 'white' : '#555', flexShrink: 0 }}>
             {c.emoji} {c.label}
           </button>
         ))}
-        <button onClick={getCurrentLocation}
-          style={{ marginLeft: 'auto', padding: '7px 14px', borderRadius: '99px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '700', background: '#EEF0FF', color: '#3B5BDB', whiteSpace: 'nowrap', flexShrink: 0 }}>
-          📍 내 위치
-        </button>
       </div>
 
       {/* 지도 */}
@@ -275,61 +271,61 @@ export default function App() {
 
         {loading && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.75)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-            <div style={{ fontSize: '40px', marginBottom: '10px' }}>🔍</div>
-            <div style={{ fontSize: '14px', color: '#666', fontWeight: '600' }}>장소 찾는 중...</div>
+            <div style={{ fontSize: '44px', marginBottom: '10px' }}>🔍</div>
+            <div style={{ fontSize: '15px', color: '#666', fontWeight: '600' }}>장소 찾는 중...</div>
           </div>
         )}
 
         {locError && !loading && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: '32px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📍</div>
-            <div style={{ fontSize: '14px', color: '#555', textAlign: 'center', marginBottom: '20px', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{locError}</div>
-            <button onClick={getCurrentLocation} style={{ padding: '12px 28px', borderRadius: '99px', border: 'none', background: '#FF6B9D', color: 'white', fontWeight: '700', fontSize: '15px', cursor: 'pointer' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.97)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, padding: '32px' }}>
+            <div style={{ fontSize: '52px', marginBottom: '16px' }}>📍</div>
+            <div style={{ fontSize: '15px', color: '#555', textAlign: 'center', marginBottom: '24px', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{locError}</div>
+            <button onClick={getCurrentLocation} style={{ padding: '14px 32px', borderRadius: '99px', border: 'none', background: '#FF6B9D', color: 'white', fontWeight: '700', fontSize: '16px', cursor: 'pointer' }}>
               다시 시도
             </button>
           </div>
         )}
 
+        {/* 내 위치 버튼 (지도 위 하나만) */}
         {!loading && !locError && (
           <button onClick={getCurrentLocation}
-            style={{ position: 'absolute', top: 12, right: 12, zIndex: 5, width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.2)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ position: 'absolute', top: 12, right: 12, zIndex: 5, width: '44px', height: '44px', borderRadius: '50%', border: 'none', background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.2)', fontSize: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             📍
           </button>
         )}
 
+        {/* 장소 상세 카드 */}
         {selectedPlace && (
-          <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16, background: 'white', borderRadius: '20px', padding: '16px', boxShadow: '0 4px 24px rgba(0,0,0,0.18)', zIndex: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'white', borderRadius: '20px 20px 0 0', padding: '20px 20px', paddingBottom: 'max(20px, env(safe-area-inset-bottom))', boxShadow: '0 -4px 24px rgba(0,0,0,0.12)', zIndex: 10 }}>
+            {/* 드래그 핸들 */}
+            <div style={{ width: '36px', height: '4px', background: '#eee', borderRadius: '99px', margin: '0 auto 16px' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '16px', fontWeight: '800', color: '#1A1A2E', marginBottom: '5px' }}>
+                <div style={{ fontSize: '17px', fontWeight: '800', color: '#1A1A2E', marginBottom: '6px', lineHeight: 1.3 }}>
                   {getEmoji(selectedPlace._kw)} {selectedPlace.place_name}
                 </div>
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '3px' }}>📍 {selectedPlace.road_address_name || selectedPlace.address_name}</div>
-                <div style={{ fontSize: '12px', color: '#FF6B9D', fontWeight: '700' }}>🚶 {formatDist(selectedPlace.distance)}</div>
+                <div style={{ fontSize: '13px', color: '#888', marginBottom: '3px' }}>📍 {selectedPlace.road_address_name || selectedPlace.address_name}</div>
+                <div style={{ fontSize: '13px', color: '#FF6B9D', fontWeight: '700' }}>🚶 {formatDist(selectedPlace.distance)}</div>
               </div>
-              <button onClick={() => setSelectedPlace(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#ccc', padding: '0 0 0 12px' }}>✕</button>
+              <button onClick={() => setSelectedPlace(null)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#ccc', padding: '0 0 0 12px', lineHeight: 1 }}>✕</button>
             </div>
-            {/* 평가 버튼 */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', marginBottom: '8px' }}>
-              <button
-                onClick={() => rate(selectedPlace.id, 'good')}
-                style={{ flex: 1, padding: '8px', borderRadius: '12px', border: '2px solid', borderColor: ratings[selectedPlace.id] === 'good' ? '#40C057' : '#eee', background: ratings[selectedPlace.id] === 'good' ? '#EBFBEE' : 'white', fontSize: '18px', cursor: 'pointer', fontWeight: '700' }}>
-                👍 좋아요
-              </button>
-              <button
-                onClick={() => rate(selectedPlace.id, 'bad')}
-                style={{ flex: 1, padding: '8px', borderRadius: '12px', border: '2px solid', borderColor: ratings[selectedPlace.id] === 'bad' ? '#FA5252' : '#eee', background: ratings[selectedPlace.id] === 'bad' ? '#FFF5F5' : 'white', fontSize: '18px', cursor: 'pointer', fontWeight: '700' }}>
-                👎 별로예요
-              </button>
-            </div>
+            {/* 평가 + 액션 버튼 한 줄 */}
             <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => rate(selectedPlace.id, 'good')}
+                style={{ width: '52px', height: '48px', borderRadius: '14px', border: '2px solid', borderColor: ratings[selectedPlace.id] === 'good' ? '#40C057' : '#eee', background: ratings[selectedPlace.id] === 'good' ? '#EBFBEE' : 'white', fontSize: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                👍
+              </button>
+              <button onClick={() => rate(selectedPlace.id, 'bad')}
+                style={{ width: '52px', height: '48px', borderRadius: '14px', border: '2px solid', borderColor: ratings[selectedPlace.id] === 'bad' ? '#FA5252' : '#eee', background: ratings[selectedPlace.id] === 'bad' ? '#FFF5F5' : 'white', fontSize: '22px', cursor: 'pointer', flexShrink: 0 }}>
+                👎
+              </button>
               {selectedPlace.phone && (
-                <a href={`tel:${selectedPlace.phone}`} style={{ flex: 1, padding: '10px', borderRadius: '12px', background: '#F0F4FF', color: '#3B5BDB', fontWeight: '700', fontSize: '13px', textDecoration: 'none', textAlign: 'center' }}>📞 전화</a>
+                <a href={`tel:${selectedPlace.phone}`} style={{ flex: 1, height: '48px', borderRadius: '14px', background: '#F0F4FF', color: '#3B5BDB', fontWeight: '700', fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📞 전화</a>
               )}
               {selectedPlace.place_url && (
                 <a href={selectedPlace.place_url} target="_blank" rel="noreferrer"
-                  style={{ flex: 2, padding: '10px', borderRadius: '12px', background: 'linear-gradient(135deg, #FF6B9D, #FF8FAB)', color: 'white', fontWeight: '700', fontSize: '13px', textDecoration: 'none', textAlign: 'center' }}>
-                  카카오맵에서 보기 →
+                  style={{ flex: 2, height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg, #FF6B9D, #FF8FAB)', color: 'white', fontWeight: '700', fontSize: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  카카오맵 →
                 </a>
               )}
             </div>
@@ -339,31 +335,30 @@ export default function App() {
 
       {/* 하단 목록 */}
       {places.length > 0 && !selectedPlace && !loading && (
-        <div style={{ flexShrink: 0, maxHeight: '200px', overflowY: 'auto', background: 'white', borderTop: '1px solid #EEF0FF' }}>
-          <div style={{ padding: '8px 16px 4px', fontSize: '11px', color: '#aaa', fontWeight: '700' }}>
+        <div style={{ flexShrink: 0, maxHeight: '220px', overflowY: 'auto', background: 'white', borderTop: '1px solid #EEF0FF', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ padding: '10px 16px 4px', fontSize: '12px', color: '#aaa', fontWeight: '700' }}>
             {places.length}곳 발견 · 가까운 순
           </div>
           {places.map((place) => (
             <div key={place.id} onClick={() => goToPlace(place)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 16px', borderBottom: '1px solid #F8F8F8', cursor: 'pointer' }}>
-              <div style={{ fontSize: '22px', flexShrink: 0 }}>{getEmoji(place._kw)}</div>
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 16px', borderBottom: '1px solid #F5F5F5', cursor: 'pointer' }}>
+              <div style={{ fontSize: '24px', flexShrink: 0 }}>{getEmoji(place._kw)}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#1A1A2E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.place_name}</div>
-                <div style={{ fontSize: '11px', color: '#bbb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.road_address_name || place.address_name}</div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#1A1A2E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.place_name}</div>
+                <div style={{ fontSize: '12px', color: '#bbb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.road_address_name || place.address_name}</div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', flexShrink: 0 }}>
-                <div style={{ fontSize: '12px', color: '#FF6B9D', fontWeight: '700' }}>{formatDist(place.distance)}</div>
-                {ratings[place.id] && (
-                  <div style={{ fontSize: '14px' }}>{ratings[place.id] === 'good' ? '👍' : '👎'}</div>
-                )}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px', flexShrink: 0 }}>
+                <div style={{ fontSize: '13px', color: '#FF6B9D', fontWeight: '700' }}>{formatDist(place.distance)}</div>
+                {ratings[place.id] && <div style={{ fontSize: '16px' }}>{ratings[place.id] === 'good' ? '👍' : '👎'}</div>}
               </div>
             </div>
           ))}
+          <div style={{ height: 'env(safe-area-inset-bottom)' }} />
         </div>
       )}
 
       {!loading && !locError && places.length === 0 && category === '기저귀교환대' && (
-        <div style={{ padding: '16px', textAlign: 'center', fontSize: '13px', color: '#aaa', background: 'white', borderTop: '1px solid #EEF0FF' }}>
+        <div style={{ padding: '20px', textAlign: 'center', fontSize: '14px', color: '#aaa', background: 'white', borderTop: '1px solid #EEF0FF' }}>
           🚼 이 지역 기저귀교환대 데이터가 없어요
         </div>
       )}
