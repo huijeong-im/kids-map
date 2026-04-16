@@ -70,10 +70,12 @@ export default function App() {
   }
 
   const saveComment = (placeId) => {
-    const next = { ...comments, [placeId]: { text: editingComment, updatedAt: new Date().toISOString() } }
-    if (!editingComment.trim()) delete next[placeId]
+    if (!editingComment.trim()) return
+    const prev = Array.isArray(comments[placeId]) ? comments[placeId] : []
+    const next = { ...comments, [placeId]: [{ text: editingComment.trim(), updatedAt: new Date().toISOString() }, ...prev] }
     setComments(next)
     localStorage.setItem('place-comments', JSON.stringify(next))
+    setEditingComment('')
     setSavedMsg(true)
     setTimeout(() => setSavedMsg(false), 2000)
   }
@@ -113,10 +115,10 @@ export default function App() {
     if (mapInstanceRef.current) searchByBounds(category)
   }, [category])
 
-  // 장소 선택시 기존 한줄평 불러오기
+  // 장소 선택시 textarea 초기화
   useEffect(() => {
     if (selectedPlace) {
-      setEditingComment(comments[selectedPlace.id]?.text || '')
+      setEditingComment('')
     }
   }, [selectedPlace?.id])
 
@@ -342,12 +344,7 @@ export default function App() {
 
             {/* 한줄평 */}
             <div style={{ background: '#F8F9FF', borderRadius: '14px', padding: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#555' }}>📝 한줄평</div>
-                {comments[selectedPlace.id]?.updatedAt && (
-                  <div style={{ fontSize: '11px', color: '#bbb' }}>{formatCommentDate(comments[selectedPlace.id].updatedAt)}</div>
-                )}
-              </div>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#555', marginBottom: '8px' }}>📝 한줄평</div>
               <textarea
                 value={editingComment}
                 onChange={e => setEditingComment(e.target.value)}
@@ -364,6 +361,17 @@ export default function App() {
                   <span style={{ fontSize: '13px', color: '#40C057', fontWeight: '600', whiteSpace: 'nowrap' }}>✓ 저장됐어요!</span>
                 )}
               </div>
+              {/* 한줄평 히스토리 */}
+              {Array.isArray(comments[selectedPlace.id]) && comments[selectedPlace.id].length > 0 && (
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {comments[selectedPlace.id].map((c, i) => (
+                    <div key={i} style={{ background: 'white', borderRadius: '10px', padding: '10px 12px', border: '1px solid #E8E8F0' }}>
+                      <div style={{ fontSize: '14px', color: '#333', lineHeight: '1.5' }}>{c.text}</div>
+                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '4px' }}>{formatCommentDate(c.updatedAt)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -388,8 +396,8 @@ export default function App() {
                     <div style={{ fontSize: '14px', fontWeight: '700', color: '#1A1A2E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.place_name}</div>
                     {rating && <span style={{ fontSize: '16px', flexShrink: 0 }}>{rating === 'good' ? '👍' : '👎'}</span>}
                   </div>
-                  {comment?.text ? (
-                    <div style={{ fontSize: '12px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>💬 {comment.text}</div>
+                  {Array.isArray(comment) && comment[0]?.text ? (
+                    <div style={{ fontSize: '12px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>💬 {comment[0].text}</div>
                   ) : (
                     <div style={{ fontSize: '12px', color: '#bbb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.road_address_name || place.address_name}</div>
                   )}
