@@ -42,6 +42,21 @@ export default function App() {
   const [selectedPlace, setSelectedPlace] = useState(null)
   const [myLocation, setMyLocation] = useState(null)
   const myLocationRef = useRef(null)
+  const [ratings, setRatings] = useState(() => {
+    const s = localStorage.getItem('place-ratings')
+    return s ? JSON.parse(s) : {}
+  })
+
+  const rate = (placeId, value) => {
+    const next = { ...ratings }
+    if (next[placeId] === value) {
+      delete next[placeId] // 같은 버튼 다시 누르면 취소
+    } else {
+      next[placeId] = value
+    }
+    setRatings(next)
+    localStorage.setItem('place-ratings', JSON.stringify(next))
+  }
 
   // 지도 초기화
   useEffect(() => {
@@ -294,7 +309,20 @@ export default function App() {
               </div>
               <button onClick={() => setSelectedPlace(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#ccc', padding: '0 0 0 12px' }}>✕</button>
             </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+            {/* 평가 버튼 */}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', marginBottom: '8px' }}>
+              <button
+                onClick={() => rate(selectedPlace.id, 'good')}
+                style={{ flex: 1, padding: '8px', borderRadius: '12px', border: '2px solid', borderColor: ratings[selectedPlace.id] === 'good' ? '#40C057' : '#eee', background: ratings[selectedPlace.id] === 'good' ? '#EBFBEE' : 'white', fontSize: '18px', cursor: 'pointer', fontWeight: '700' }}>
+                👍 좋아요
+              </button>
+              <button
+                onClick={() => rate(selectedPlace.id, 'bad')}
+                style={{ flex: 1, padding: '8px', borderRadius: '12px', border: '2px solid', borderColor: ratings[selectedPlace.id] === 'bad' ? '#FA5252' : '#eee', background: ratings[selectedPlace.id] === 'bad' ? '#FFF5F5' : 'white', fontSize: '18px', cursor: 'pointer', fontWeight: '700' }}>
+                👎 별로예요
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
               {selectedPlace.phone && (
                 <a href={`tel:${selectedPlace.phone}`} style={{ flex: 1, padding: '10px', borderRadius: '12px', background: '#F0F4FF', color: '#3B5BDB', fontWeight: '700', fontSize: '13px', textDecoration: 'none', textAlign: 'center' }}>📞 전화</a>
               )}
@@ -323,7 +351,12 @@ export default function App() {
                 <div style={{ fontSize: '13px', fontWeight: '700', color: '#1A1A2E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.place_name}</div>
                 <div style={{ fontSize: '11px', color: '#bbb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.road_address_name || place.address_name}</div>
               </div>
-              <div style={{ fontSize: '12px', color: '#FF6B9D', fontWeight: '700', flexShrink: 0 }}>{formatDist(place.distance)}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', flexShrink: 0 }}>
+                <div style={{ fontSize: '12px', color: '#FF6B9D', fontWeight: '700' }}>{formatDist(place.distance)}</div>
+                {ratings[place.id] && (
+                  <div style={{ fontSize: '14px' }}>{ratings[place.id] === 'good' ? '👍' : '👎'}</div>
+                )}
+              </div>
             </div>
           ))}
         </div>

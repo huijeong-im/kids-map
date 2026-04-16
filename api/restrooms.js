@@ -46,19 +46,20 @@ export default async function handler(req, res) {
 
     // 기저귀교환대 있는 곳만 필터링 + 거리 계산
     const results = items
-      .filter(item => {
-        const hasChanger =
-          item.babyYn === 'Y' || item.diaperYn === 'Y' ||
-          item.babyroomYn === 'Y' || item.changeYn === 'Y' ||
-          item.diaper_yn === 'Y' || item.baby_yn === 'Y' ||
-          (item.etcFacility && item.etcFacility.includes('기저귀'))
-        return hasChanger
-      })
+      .filter(item => item.DIAP_EXCHCON_EN === 'Y')
       .map(item => {
-        const itemLat = parseFloat(item.wgsY || item.latitude || item.lat || 0)
-        const itemLng = parseFloat(item.wgsX || item.longitude || item.lng || 0)
+        const itemLat = parseFloat(item.WGS84_LAT || 0)
+        const itemLng = parseFloat(item.WGS84_LOT || 0)
         const distance = getDistance(userLat, userLng, itemLat, itemLng)
-        return { ...item, _distance: Math.round(distance), _lat: itemLat, _lng: itemLng }
+        return {
+          managementCode: item.MNG_NO,
+          restroomNm: item.SE_NM || item.MNG_INST_NM || '공중화장실',
+          rdnmadr: item.LCTN_ROAD_NM_ADDR || item.LCTN_LOTNO_ADDR || '',
+          phoneNumber: item.TELNO || '',
+          _distance: Math.round(distance),
+          _lat: itemLat,
+          _lng: itemLng,
+        }
       })
       .filter(item => item._distance <= RADIUS && item._lat !== 0)
       .sort((a, b) => a._distance - b._distance)
