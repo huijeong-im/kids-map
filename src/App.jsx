@@ -115,8 +115,37 @@ export default function App() {
     setSelectedPlace(null)
     clearOverlays()
 
+    // 기저귀교환대는 공공데이터 API 사용
+    if (cat === '기저귀교환대') {
+      fetch(`/api/restrooms?lat=${lat}&lng=${lng}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) throw new Error(data.error)
+          const places = (data.restrooms || []).map(item => ({
+            id: item.managementCode || item.restroomNm + item._lat,
+            place_name: item.restroomNm || '공중화장실',
+            road_address_name: item.rdnmadr || item.lnmadr || '',
+            address_name: item.lnmadr || item.rdnmadr || '',
+            x: String(item._lng),
+            y: String(item._lat),
+            distance: String(item._distance),
+            place_url: '',
+            phone: item.phoneNumber || '',
+            _kw: '기저귀교환대',
+          }))
+          setPlaces(places)
+          addOverlays(places)
+          setLoading(false)
+        })
+        .catch(e => {
+          setLocError('기저귀교환대 데이터 불러오기 실패: ' + e.message)
+          setLoading(false)
+        })
+      return
+    }
+
     const ps = new kakao.maps.services.Places()
-    const keywords = cat === 'all' ? ['키즈카페', '놀이터', '공원', '수유실', '기저귀교환대'] : [cat]
+    const keywords = cat === 'all' ? ['키즈카페', '놀이터', '공원', '수유실'] : [cat]
     const allResults = []
     let doneCount = 0
 
