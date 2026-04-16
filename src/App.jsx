@@ -42,26 +42,21 @@ export default function App() {
       }
     }
 
-    if (!window.kakao) {
-      setLocError('카카오맵 SDK가 로드되지 않았어요. 페이지를 새로고침 해주세요.')
-      setLoading(false)
-      return
+    // 카카오맵 SDK를 동적으로 로드
+    const script = document.createElement('script')
+    script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=f6fb3013ac0783edfdacee69ee48826f&libraries=services&autoload=false'
+    script.onload = () => {
+      window.kakao.maps.load(init)
     }
+    script.onerror = () => {
+      setLocError('카카오맵 SDK 로드 실패.\n네트워크 또는 API 키 설정을 확인해주세요.')
+      setLoading(false)
+    }
+    document.head.appendChild(script)
 
-    // SDK 로드 타임아웃 (5초)
-    const timeout = setTimeout(() => {
-      if (!mapInstanceRef.current) {
-        setLocError('카카오맵 인증 실패. API 키 또는 도메인 설정을 확인해주세요.')
-        setLoading(false)
-      }
-    }, 5000)
-
-    window.kakao.maps.load(() => {
-      clearTimeout(timeout)
-      init()
-    })
-
-    return () => clearTimeout(timeout)
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script)
+    }
   }, [])
 
   // 카테고리 변경 시 재검색
