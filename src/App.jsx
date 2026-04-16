@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 
 const CATEGORIES = [
-  { key: '기저귀교환대', label: '기저귀교환대', emoji: '🚼' },
   { key: '수유실', label: '수유실', emoji: '🍼' },
+  { key: '기저귀교환대', label: '기저귀교환대', emoji: '🚼' },
   { key: '공원', label: '공원', emoji: '🌳' },
   { key: '놀이터', label: '놀이터', emoji: '🛝' },
   { key: '키즈카페', label: '키즈카페', emoji: '🎠' },
@@ -41,9 +41,9 @@ export default function App() {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const overlaysRef = useRef([])
-  const categoryRef = useRef('기저귀교환대')
+  const categoryRef = useRef('수유실')
 
-  const [category, setCategory] = useState('기저귀교환대')
+  const [category, setCategory] = useState('수유실')
   const [places, setPlaces] = useState([])
   const [loading, setLoading] = useState(true)
   const [locError, setLocError] = useState(null)
