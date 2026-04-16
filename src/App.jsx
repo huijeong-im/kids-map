@@ -59,6 +59,7 @@ export default function App() {
     return s ? JSON.parse(s) : {}
   })
   const [editingComment, setEditingComment] = useState('')
+  const [savedMsg, setSavedMsg] = useState(false)
 
   const rate = (placeId, value) => {
     const next = { ...ratings }
@@ -73,6 +74,8 @@ export default function App() {
     if (!editingComment.trim()) delete next[placeId]
     setComments(next)
     localStorage.setItem('place-comments', JSON.stringify(next))
+    setSavedMsg(true)
+    setTimeout(() => setSavedMsg(false), 2000)
   }
 
   // 지도 초기화
@@ -351,11 +354,16 @@ export default function App() {
                 placeholder="이곳은 어땠나요? 메모를 남겨보세요"
                 style={{ width: '100%', minHeight: '64px', border: '1px solid #E8E8F0', borderRadius: '10px', padding: '10px', fontSize: '14px', resize: 'none', outline: 'none', fontFamily: 'inherit', background: 'white', color: '#333', boxSizing: 'border-box' }}
               />
-              <button
-                onClick={() => saveComment(selectedPlace.id)}
-                style={{ marginTop: '8px', width: '100%', padding: '10px', borderRadius: '10px', border: 'none', background: '#FF6B9D', color: 'white', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
-                저장
-              </button>
+              <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  onClick={() => saveComment(selectedPlace.id)}
+                  style={{ flex: 1, padding: '10px', borderRadius: '10px', border: 'none', background: '#FF6B9D', color: 'white', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                  저장
+                </button>
+                {savedMsg && (
+                  <span style={{ fontSize: '13px', color: '#40C057', fontWeight: '600', whiteSpace: 'nowrap' }}>✓ 저장됐어요!</span>
+                )}
+              </div>
             </div>
           </div>
         )}
