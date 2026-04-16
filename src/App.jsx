@@ -37,8 +37,8 @@ export default function App() {
       getCurrentLocation()
     }
 
-    if (window.kakao && window.kakao.maps) {
-      kakao.maps.load(init)
+    if (window.kakao) {
+      window.kakao.maps.load(init)
     }
   }, [])
 
